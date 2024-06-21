@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carga de archivos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #343a40;
+        }
+        form {
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="submit"] {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background: #0056b3;
+        }
+        #file-info {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .file-details {
+            margin-bottom: 10px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carga de archivos</h1>
+    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="files" multiple />
+        <input type="submit" value="Cargar" />
+    </form>
+    <div id="file-info"></div>
+    <script>
+        // Script para mostrar los detalles del archivo cargado
+        const form = document.getElementById('upload-form');
+        const fileInfoDiv = document.getElementById('file-info');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            fileInfoDiv.innerHTML = ''; // Limpiar contenido previo
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const filesInfo = await response.json();
+                    filesInfo.forEach(fileInfo => {
+                        const fileDetails = document.createElement('div');
+                        fileDetails.classList.add('file-details');
+                        fileDetails.innerHTML = `
+                            <p>Nombre: ${fileInfo.filename}</p>
+                            <p>Nombre original: ${fileInfo.originalname}</p>
+                            <p>Tamaño: ${fileInfo.size} bytes</p>
+                            <p>Tipo MIME: ${fileInfo.mimetype}</p>
+                        `;
+                        fileInfoDiv.appendChild(fileDetails);
+                    });
+                } else {
+                    const error = await response.json();
+                    fileInfoDiv.innerHTML = `<p class="error">Error: ${error.error}</p>`;
+                }
+            } catch (err) {
+                fileInfoDiv.innerHTML = `<p class="error">Error al cargar los archivos.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
